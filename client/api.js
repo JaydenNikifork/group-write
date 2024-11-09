@@ -1,10 +1,12 @@
 import { stateMachine } from ".";
 import * as UIUpdator from "./ui-updators";
-import * as Config from './config';
+import { env } from './config/config';
+import { toWebsocketUrl } from "./utils";
 
-const getCurrentStoryUrl = `${Config.baseUrl}/get-current-story`;
-const getNumUsersUrl = `${Config.baseUrl}/get-num-users`;
-const getStoriesUrl = `${Config.baseUrl}/get-stories`;
+const getCurrentStoryUrl = `${env.baseUrl}/get-current-story`;
+const getNumUsersUrl = `${env.baseUrl}/get-num-users`;
+const getStoriesUrl = `${env.baseUrl}/get-stories`;
+const setupWebsocketUrl = toWebsocketUrl(`${env.baseUrl}/ws`);
 
 const ResponseCodes = {
   VOTE_UPDATE: 0,
@@ -16,6 +18,10 @@ const ResponseCodes = {
  * @property {string} title
  * @property {string} text
  * @property {number} timestamp
+ */
+
+/**
+ * @typedef {Record<string, number>} Votes
  */
 
 /**
@@ -55,7 +61,7 @@ export async function getNumUsers() {
 }
 
 export function setupWebsocket() {
-  const ws = new WebSocket(Config.websocketUrl);
+  const ws = new WebSocket(setupWebsocketUrl);
   
   ws.onmessage = (ev) => {
     console.log("Message from server:", ev.data);

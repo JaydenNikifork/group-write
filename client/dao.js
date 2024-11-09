@@ -1,11 +1,13 @@
 import * as API from './api';
+import { env } from './config/config';
+import { toWebsocketUrl } from './utils';
 
-/** @import { Story } from './api.js' */
+/** @import { Story, Votes } from './api.js' */
 
 /**
  * @abstract
  */
-class IDao {
+export class IDao {
   /**
    * @private
    */
@@ -39,16 +41,18 @@ class IDao {
 }
 
 
-class APIDao extends IDao {
+export class APIDao extends IDao {
   /**
    * @private
    * @type {WebSocket}
    */
   ws;
-  
+
   constructor() {
     super();
-    this.ws = new WebSocket(API.websocketUrl);
+
+    const setupWebsocketUrl = toWebsocketUrl(`${env.baseUrl}/ws`);
+    this.ws = new WebSocket(setupWebsocketUrl);
   }
 
   getStories() {
@@ -65,5 +69,64 @@ class APIDao extends IDao {
   
   sendVote(word) {
     this.ws.send(word);
+  }
+}
+
+export class TestDao extends IDao {
+
+  /**
+   * @private
+   * @type {Story[]}
+   */
+  stories = [{
+    title: 'story 1',
+    text: 'Hello world! This is story 1!',
+    timestamp: 12345
+  }, {
+    title: 'story 2',
+    text: 'Hello world! This is story 2!',
+    timestamp: 34567
+  }, {
+    title: 'story 3',
+    text: 'Hello world! This is story 3!',
+    timestamp: 67890
+  }];
+
+  /**
+   * @private
+   * @type {Story}
+   */
+  currentStory = {
+    title: '',
+    text: '',
+    timestamp: 0
+  };
+
+  /**
+   * @private
+   * @type {number}
+   */
+  numUsers = 69;
+
+  /**
+   * @private
+   * @type {Votes}
+   */
+  votes = {};
+
+  getStories() {
+    return Promise.resolve(this.stories);
+  }
+
+  getCurrentStory() {
+    return Promise.resolve(this.currentStory);
+  }
+
+  getNumUsers() {
+    return Promise.resolve(this.numUsers);
+  }
+  
+  sendVote(word) {
+    this.votes[word]++;
   }
 }
