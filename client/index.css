@@ -12,9 +12,6 @@ button {
   font-family: "Noto Sans", sans-serif;
 }
 
-body {
-}
-
 .col {
   display: flex;
   flex-direction: column;
@@ -65,10 +62,7 @@ body {
   width: 3em;
 }
 
-.story-word {
-}
-
-#vote-input {
+#vote-input, #title-input {
   width: 10em;
   height: min-content;
   border: 0;
@@ -79,13 +73,18 @@ body {
   border-radius: 6px;
 }
 
-#vote-input:disabled {
+#vote-input:disabled, #title-input:disabled {
   color: grey;
   background-color: #7f7f7f3c;
 }
 
-#votes {
+#votes-container {
   width: 30rem;
+}
+
+#votes {
+  display: none;
+  width: 100%;
 }
 
 #votes-timer {

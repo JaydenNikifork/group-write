@@ -1,13 +1,7 @@
-import * as API from './api';
-import { env } from './config/config';
-import { toWebsocketUrl } from './utils';
-
-/** @import { Story, Votes } from './api.js' */
-
 /**
  * @abstract
  */
-export class IDao {
+class IDao {
   /**
    * @private
    */
@@ -41,7 +35,7 @@ export class IDao {
 }
 
 
-export class APIDao extends IDao {
+class apiDao extends IDao {
   /**
    * @private
    * @type {WebSocket}
@@ -53,18 +47,48 @@ export class APIDao extends IDao {
 
     const setupWebsocketUrl = toWebsocketUrl(`${env.baseUrl}/ws`);
     this.ws = new WebSocket(setupWebsocketUrl);
+
+    
+    this.ws.onmessage = (ev) => {
+      console.log("Message from server:", ev.data);
+
+      const parsedData = JSON.parse(ev.data);
+      const code = parsedData.code;
+      const data = parsedData.data;
+
+      switch (code) {
+        case api.ResponseCodes.VOTE_UPDATE:
+          stateMachine.update({
+            voteMsRemaining: data.msRemaining,
+            currentVoteUpdateTimestamp: Date.now(),
+            votes: data.votes
+          });
+          stateMachine.transition('voteStarting');
+          break;
+        case api.ResponseCodes.VOTE_RESULT:
+          stateMachine.transition('voteEnding');
+          if (data === "END STORY") {
+            stateMachine.transition('storyEnding');
+          } else if (data === "END TITLE") {
+            stateMachine.transition('titleEnding');
+          }
+          break;
+        default:
+          throw new Error(`Invalid response code: ${code}`);
+      }
+    };
   }
 
   getStories() {
-    return API.getStories();
+    return api.getStories();
   }
 
   getCurrentStory() {
-    return API.getCurrentStory();
+    return api.getCurrentStory();
   }
 
   getNumUsers() {
-    return API.getNumUsers();
+    return api.getNumUsers();
   }
   
   sendVote(word) {
@@ -72,7 +96,7 @@ export class APIDao extends IDao {
   }
 }
 
-export class TestDao extends IDao {
+class TestDao extends IDao {
 
   /**
    * @private
@@ -129,4 +153,15 @@ export class TestDao extends IDao {
   sendVote(word) {
     this.votes[word]++;
   }
+}
+
+switch (env.daoType) {
+  case 'api':
+    env.dao = new apiDao();
+    break;
+  case 'test':
+    env.dao = new TestDao();
+    break;
+  default:
+    throw new Error(`Config attempted to load invalid dao type: ${env.daoType}!`);
 }

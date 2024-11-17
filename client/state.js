@@ -9,26 +9,26 @@
  * @property {Partial<State>} outputState
  */
 
-export default class StateMachine {
-  /** @public */
+class StateMachine {
+  /** 
+   * @public
+   * @type {State}
+   */
   state;
-  /** @private */
+  /**
+   * @private
+   * @type {Transition[]}
+   */
   transitions;
-  /** @private */
+  /**
+   * @private
+   * @type {Function}
+   */
   handler;
-
-  constructor(
-    /** @type {State} */ state,
-    /** @type {Transition[]} */ transitions,
-    /** @type {Function} */ handler
-  ) {
-    this.state = state;
-    this.transitions = transitions;
-    this.handler = handler;
-  }
 
   transition(/** @type {string} */input) {
     let hasTransitioned = false;
+    let stateDiff;
     for (const {inputState, condition, outputState} of this.transitions) {
       if (input !== condition) continue;
 
@@ -45,12 +45,13 @@ export default class StateMachine {
           this.state[stateKey] = outputState[stateKey];
         }
         hasTransitioned = true;
+        stateDiff = outputState;
         break;
       }
     }
 
     if (hasTransitioned) {
-      this.handler(this.state);
+      this.handler(stateDiff);
     } else {
       throw new Error(`No applicable transition found!\nInput: ${input}\nState: ${JSON.stringify(this.state)}`);
     }
@@ -60,7 +61,17 @@ export default class StateMachine {
     for (const stateKey of Object.keys(stateUpdate)) {
       this.state[stateKey] = stateUpdate[stateKey];
     }
+  }
 
-    this.handler(this.state);
+  init(
+    /** @type {State} */ state,
+    /** @type {Transition[]} */ transitions,
+    /** @type {Function} */ handler
+  ) {
+    this.state = state;
+    this.transitions = transitions;
+    this.handler = handler;
   }
 }
+
+const stateMachine = new StateMachine();

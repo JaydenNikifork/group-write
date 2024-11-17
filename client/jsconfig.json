@@ -3,6 +3,8 @@
     "checkJs": true,
     "noEmit": true,
     "lib": ["ES2017", "DOM"],
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   },
   "include": ["**/*.js"]
 }
