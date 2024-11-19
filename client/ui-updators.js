@@ -1,7 +1,6 @@
 class UIUpdator {
   // List of HTML element ids
   titleId = 'title';
-  titleInputId = 'title-input';
   storyId = 'story';
   storyInputId = 'vote-input';
   endStoryBtnId = 'end-story';
@@ -13,96 +12,53 @@ class UIUpdator {
   storyWordClass = 'story-word';
   voteRowClass = 'vote-row';
 
-  createTitleInput() {
-    const titleElem = document.getElementById(this.titleId);
+  // List of HTML elements
+  storyInputElem = /** @type {HTMLInputElement} */(document.getElementById(this.storyInputId));
+  endStoryBtn = /** @type {HTMLButtonElement} */(document.getElementById(this.endStoryBtnId));
+  titleElem = document.getElementById(this.titleId);
+  storyElem = document.getElementById(this.storyId);
+  storyContainerElem = document.getElementById(this.storyContainerId);
 
-    if (Array.from(titleElem.children).find((child) => child.id === this.titleInputId) !== undefined) {
-      throw new Error('Attempting to create title input element when it already exists!');
-    }
-
-    const titleInputElem = document.createElement('input');
-    titleInputElem.id = this.titleInputId;
-    titleInputElem.placeholder = 'enter vote here';
-    titleInputElem.addEventListener('keydown', (ev) => {
+  init() {
+    this.storyInputElem.addEventListener('keydown', (ev) => {
       if (ev.key != 'Enter' && ev.key != ' ') return;
     
-      const word = titleInputElem.value.trim().split(' ')[0];
-      env.dao.sendVote(word);
-      stateMachine.transition('userVoted');
-    });
-    titleElem.appendChild(titleInputElem);
-
-    const endTitleElem = document.createElement('button');
-    endTitleElem.id = this.endStoryBtnId;
-    endTitleElem.innerText = 'END TITLE';
-    endTitleElem.onclick = () => {
-      env.dao.sendVote('END TITLE');
-    }
-
-    const storyContainerElem = document.getElementById(this.storyContainerId);
-    storyContainerElem.appendChild(endTitleElem);
-
-  }
-
-  removeTitleInput() {
-    const titleInputElem = document.getElementById(this.titleInputId);
-    titleInputElem.remove();
-
-    const endTitleElem = document.getElementById(this.endStoryBtnId);
-    endTitleElem.remove();
-  }
-
-  createStoryInputs() {
-    if (document.getElementById(this.storyInputId) !== null) {
-      throw new Error(`Story input already exists!`);
-    }
-    
-    if (document.getElementById(this.endStoryBtnId) !== null) {
-      throw new Error(`End story button already exists!`);
-    }
-
-    const storyInputElem = document.createElement('input');
-    storyInputElem.id = this.storyInputId;
-    storyInputElem.placeholder = 'enter vote here';
-    storyInputElem.addEventListener('keydown', (ev) => {
-      if (ev.key != 'Enter' && ev.key != ' ') return;
-    
-      const word = storyInputElem.value.trim().split(' ')[0];
-      env.dao.sendVote(word);
+      const word = this.storyInputElem.value.trim().split(' ')[0];
+      ws.send(word);
+      stateMachine.update({userHasVoted: true});
     });
 
-    const endStoryElem = document.createElement('button');
-    endStoryElem.id = this.endStoryBtnId;
-    endStoryElem.innerText = 'END STORY';
-    endStoryElem.onclick = () => {
-      env.dao.sendVote('END STORY');
-    }
-
-    const storyContainerElem = document.getElementById(this.storyContainerId);
-    storyContainerElem.appendChild(endStoryElem);
-
-    const storyElem = document.getElementById(this.storyId);
-    storyElem.appendChild(storyInputElem);
-  }
-
-  /**
-   * Clears the title and text
-   */
-  clearStory() {
-    const titleElem = document.getElementById(this.titleId);
-    const storyElem = document.getElementById(this.storyId);
-
-    titleElem.innerText = "";
-
-    const storyWordElems = document.getElementsByClassName(this.storyWordClass);
-    for (const storyWordElem of Array.from(storyWordElems)) {
-      const childCountBefore = storyElem.childElementCount;
-      storyElem.removeChild(storyWordElem);
-      const childCountAfter = storyElem.childElementCount;
-      if (childCountBefore !== childCountAfter) {
-        throw new Error(`Found '.story-word' element outside of 'story' element!`);
+    this.endStoryBtn.onclick = () => {
+      if (stateMachine.state.voteType === 1) {
+        ws.send("END TITLE");
+      } else if (stateMachine.state.voteType === 2) {
+        ws.send("END STORY");
       }
+      stateMachine.update({userHasVoted: true});
     }
+  }
+
+  showTitleInputs() {
+    this.storyInputElem.remove();
+    this.endStoryBtn.remove();
+
+    this.titleElem.insertBefore(this.storyInputElem, null);
+    this.storyContainerElem.insertBefore(this.endStoryBtn, null);
+    this.endStoryBtn.value = "END TITLE";
+  }
+
+  showTextInputs() {
+    this.storyInputElem.remove();
+    this.endStoryBtn.remove();
+
+    this.storyElem.insertBefore(this.storyInputElem, null);
+    this.storyContainerElem.insertBefore(this.endStoryBtn, null);
+    this.endStoryBtn.value = "END STORY";
+  }
+
+  hideInputs() {
+    this.storyInputElem.remove();
+    this.endStoryBtn.remove();
   }
 
   showVotesTab() {
@@ -115,78 +71,51 @@ class UIUpdator {
     votesElem.style.display = 'none';
   }
 
-  async updateStoryAndTitle() {
+  updateStoryAndTitle(/** @type {string} */title, /** @type {string} */text) {
     const storyWordElems = document.getElementsByClassName(this.storyWordClass);
     Array.from(storyWordElems).forEach(elem => elem.remove());
 
-    const storyElem = document.getElementById(this.storyId);
-    const storyInputElem = document.getElementById(this.storyInputId);
-
-    const currentStory = await api.getCurrentStory();
-    const storyArr = currentStory.text.split(/\s/);
-    for (const storyWord of storyArr) {
-      const storyWordElem = document.createElement('p');
-      storyWordElem.className = this.storyWordClass;
-      storyWordElem.innerText = storyWord;
-      storyElem.insertBefore(storyWordElem, storyInputElem);
-    }
-
     const titleElem = document.getElementById(this.titleId);
-    const titleInputElem = document.getElementById(this.titleInputId);
-    const titleArr = currentStory.title.split(/\s/);
+    const titleArr = title.split(/\s/);
+    titleArr.reverse();
     for (const titleWord of titleArr) {
       const titleWordElem = document.createElement('p');
       titleWordElem.className = this.storyWordClass;
       titleWordElem.innerText = titleWord;
-      titleElem.insertBefore(titleWordElem, titleInputElem);
+      titleElem.insertAdjacentElement('afterbegin', titleWordElem);
+    }
+
+    const storyElem = document.getElementById(this.storyId);
+    const storyArr = text.split(/\s/);
+    storyArr.reverse();
+    for (const storyWord of storyArr) {
+      const storyWordElem = document.createElement('p');
+      storyWordElem.className = this.storyWordClass;
+      storyWordElem.innerText = storyWord;
+      storyElem.insertBefore(storyWordElem, titleElem.nextElementSibling);
     }
   }
 
   disableAllInputs() {
-    const titleInput = /** @type {HTMLInputElement} */(document.getElementById(this.titleInputId));
-    const storyInput = /** @type {HTMLInputElement} */(document.getElementById(this.storyInputId));
-    const endStoryBtn = /** @type {HTMLButtonElement} */(document.getElementById(this.endStoryBtnId));
-
-    if (titleInput !== null) titleInput.disabled = true;
-    if (storyInput !== null) storyInput.disabled = true;
-    if (endStoryBtn !== null) endStoryBtn.disabled = true;
+    this.storyInputElem.disabled = true;
+    this.endStoryBtn.disabled = true;
   }
 
   enableAllInputs() {
-    const titleInput = /** @type {HTMLInputElement} */(document.getElementById(this.titleInputId));
-    const storyInput = /** @type {HTMLInputElement} */(document.getElementById(this.storyInputId));
-    const endStoryBtn = /** @type {HTMLButtonElement} */(document.getElementById(this.endStoryBtnId));
-
-    if (titleInput !== null) titleInput.disabled = false;
-    if (storyInput !== null) storyInput.disabled = false;
-    if (endStoryBtn !== null) endStoryBtn.disabled = false;
+    this.storyInputElem.disabled = false;
+    this.endStoryBtn.disabled = false;
   }
 
   clearInput() {
-    const state = stateMachine.state;
-    if (state.storyHasTitle === true) {
-      const storyInputElem = /** @type {HTMLInputElement} */(document.getElementById(this.storyInputId));
-      storyInputElem.value = '';
-    } else if (state.storyHasTitle === false) {
-      const titleInputElem = /** @type {HTMLInputElement} */(document.getElementById(this.titleInputId));
-      titleInputElem.value = '';
-    }
+    this.storyInputElem.value = '';
   }
 
   focusInput() {
-    const state = stateMachine.state;
-    if (state.storyHasTitle === true) {
-      const storyInputElem = /** @type {HTMLInputElement} */(document.getElementById(this.storyInputId));
-      storyInputElem.focus();
-    } else if (state.storyHasTitle === false) {
-      const titleInputElem = /** @type {HTMLInputElement} */(document.getElementById(this.titleInputId));
-      titleInputElem.focus();
-    }
+    this.storyInputElem.focus();
   }
 
   updateVotesElem() {
     const state = stateMachine.state;
-
     /** @type {[string, number][]} */
     const votesArr = [];
     for (const [word, numVotes] of Object.entries(state.votes)) {
@@ -201,7 +130,7 @@ class UIUpdator {
 
     const maxWidth = votesTimerElem.parentElement.clientWidth;
     const updateVoteTimerInterval = setInterval(() => {
-      const newWidth = (state.voteMsRemaining - (Date.now() - state.currentVoteUpdateTimestamp)) / 5000 * maxWidth;
+      const newWidth = maxWidth - maxWidth * (Date.now() - state.voteStartTimestamp) / 5000;
       const newTime = newWidth / maxWidth * 5;
       votesTimerElem.innerText = (Math.round(newTime * 100) / 100).toFixed(2);
       votesTimerElem.style.width = `${newWidth}px`;
@@ -219,9 +148,6 @@ class UIUpdator {
   }
 
   stopVotesTimer() {
-    if (stateMachine.state.updateVoteTimerInterval === null) {
-      throw new Error(`Attempted to stop timer when it wasn't even cookin'!`);
-    }
     clearInterval(stateMachine.state.updateVoteTimerInterval);
 
     stateMachine.update({ updateVoteTimerInterval: null }); 
@@ -229,3 +155,4 @@ class UIUpdator {
 }
 
 const uiUpdator = new UIUpdator();
+uiUpdator.init();

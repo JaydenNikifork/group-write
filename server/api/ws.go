@@ -15,12 +15,6 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func SendStateDiff() {
-	for _, user := range state.Users.Val {
-		user.Conn.WriteJSON(state.GetStateDiff())
-	}
-}
-
 var idCounter int = 0
 
 func WsSetup(w http.ResponseWriter, r *http.Request) {
@@ -59,12 +53,10 @@ func WsSetup(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		println("Reading message:", msg)
-
 		user := state.Users.Val[userId]
 		if state.VoteType.Val != state.NO_STORY && !user.HasVoted {
 			users := state.Users.Val
-			delete(users, userId)
+			users[userId].HasVoted = true
 			state.Users.Update(users)
 			state.VoteWord(string(msg))
 		}

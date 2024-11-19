@@ -61,6 +61,7 @@ class StateMachine {
     for (const stateKey of Object.keys(stateUpdate)) {
       this.state[stateKey] = stateUpdate[stateKey];
     }
+    this.handler(stateUpdate)
   }
 
   init(

@@ -9,7 +9,12 @@ import (
 )
 
 func GetCurrentState(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(state.GetCurrentState())
+	currentState := state.GetCurrentState()
+	json.NewEncoder(w).Encode(currentState)
+
+	if currentState["voteType"] == state.NO_STORY {
+		state.StartStory()
+	}
 }
 
 func GetAllStories(w http.ResponseWriter, r *http.Request) {

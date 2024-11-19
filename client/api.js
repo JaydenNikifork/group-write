@@ -1,4 +1,4 @@
-const getCurrentStoryUrl = `${env.baseUrl}/get-current-story`;
+const getCurrentStateUrl = `${env.baseUrl}/get-current-state`;
 const getNumUsersUrl = `${env.baseUrl}/get-num-users`;
 const getStoriesUrl = `${env.baseUrl}/get-stories`;
 
@@ -36,25 +36,39 @@ class API {
    * 
    * @returns {Promise<Story>}
    */
-  async getCurrentStory() {
-    const res = await fetch(getCurrentStoryUrl);
-    const json = await res.json();
-    const currentStory = json.data;
+  async getCurrentState() {
+    const res = await fetch(getCurrentStateUrl);
+    const currentState = await res.json();
 
-    return currentStory;
-  }
-
-  /**
-   * 
-   * @returns {Promise<number>}
-   */
-  async getNumUsers() {
-    const res = await fetch(getNumUsersUrl);
-    const json = await res.json();
-    const numUsers = json.data.numUsers;
-
-    return numUsers;
+    return currentState;
   }
 }
 
 const api = new API();
+
+const setupWebsocketUrl = toWebsocketUrl(`${env.baseUrl}/ws`);
+const ws = new WebSocket(setupWebsocketUrl);
+
+ws.onmessage = (ev) => {
+  console.log("Message from server:", ev.data);
+
+  const serverStateDiff = JSON.parse(ev.data);
+  const stateUpdate = {};
+  Object.assign(stateUpdate, serverStateDiff);
+  if (serverStateDiff.title !== undefined) {
+    if (serverStateDiff.title === '') stateUpdate.title = '';
+    else stateUpdate.title = stateMachine.state.title + serverStateDiff.title;
+  }
+  if (serverStateDiff.text !== undefined) {
+    if (serverStateDiff.text === '') stateUpdate.text = '';
+    else stateUpdate.text = stateMachine.state.text + serverStateDiff.text;
+  }
+  if (serverStateDiff.votes !== undefined) {
+    if (Object.keys(serverStateDiff.votes).length === 0) stateUpdate.votes = {};
+    else {
+      Object.assign(stateUpdate.votes, stateMachine.state.votes);
+      Object.assign(stateUpdate.votes, serverStateDiff.votes);
+    }
+  }
+  stateMachine.update(stateUpdate);
+};

@@ -155,13 +155,13 @@ class TestDao extends IDao {
   }
 }
 
-switch (env.daoType) {
-  case 'api':
-    env.dao = new apiDao();
-    break;
-  case 'test':
-    env.dao = new TestDao();
-    break;
-  default:
-    throw new Error(`Config attempted to load invalid dao type: ${env.daoType}!`);
-}
+// switch (env.daoType) {
+  // case 'api':
+    // env.dao = new apiDao();
+    // break;
+  // case 'test':
+    // env.dao = new TestDao();
+    // break;
+  // default:
+    // throw new Error(`Config attempted to load invalid dao type: ${env.daoType}!`);
+// }

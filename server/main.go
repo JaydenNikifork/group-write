@@ -3,21 +3,20 @@ package main
 import (
 	"group-write/api"
 	"group-write/db"
-	"time"
 )
 
 func main() {
 	db.Init()
 	defer db.Close()
 
+	//ticker := time.NewTicker(500 * time.Millisecond)
+	//defer ticker.Stop()
+
+	//go func() {
+	//for range ticker.C {
+	//api.SendStateDiff()
+	//}
+	//}()
+
 	api.Init()
-
-	ticker := time.NewTicker(250 * time.Millisecond)
-	defer ticker.Stop()
-
-	go func() {
-		for range ticker.C {
-			api.SendStateDiff()
-		}
-	}()
 }

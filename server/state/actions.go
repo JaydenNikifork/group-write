@@ -19,8 +19,11 @@ func EndStory() {
 
 	db.InsertStory(Title.Val, Text.Val)
 
-	Title.Update("")
-	Text.Update("")
+	time.AfterFunc(5*time.Second, func() {
+		Title.Update("")
+		Text.Update("")
+		VoteType.Update(TITLE_VOTE)
+	})
 }
 
 func EndVote() {
@@ -56,6 +59,7 @@ func EndVote() {
 
 	IsVoteRunning.Update(false)
 }
+
 func StartVote() {
 	if IsVoteRunning.Val {
 		return
@@ -72,9 +76,20 @@ func StartVote() {
 func VoteWord(word string) {
 	StartVote()
 
-	votes := Votes.Val
+	votes := make(map[string]int)
+	for key, value := range Votes.Val {
+		votes[key] = value
+	}
 	votes[word]++
 	Votes.Update(votes)
 
 	println("Voted for:", word, "and count is now:", votes[word])
+}
+
+func SendStateDiff() {
+	stateDiff := GetStateDiff()
+	for _, user := range Users.Val {
+		user.Conn.WriteJSON(stateDiff)
+	}
+	ResetStateDiff()
 }

@@ -38,7 +38,7 @@ button {
   gap: 12px;
 }
 
-#story {
+#story, #title {
   width: 40rem;
   display: flex;
   flex-direction: row;
@@ -52,14 +52,14 @@ button {
   border-radius: 1rem;
 }
 
+#title {
+  justify-content: center;
+  font-size: x-large;
+}
+
 #story::after {
   content: '';
   flex: auto;
-}
-
-#paragraph-start {
-  height: 1px;
-  width: 3em;
 }
 
 #vote-input, #title-input {
