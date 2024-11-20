@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"group-write/types"
 	"log"
 	"time"
@@ -48,9 +49,44 @@ func InsertStory(title, text string) {
 	}
 }
 
+func SelectStoryById(id int) (types.Story, error) {
+	query := `
+	SELECT id, title, text, timestamp
+	FROM stories S
+	WHERE id = ?;`
+
+	rows, err := db.Query(query, id)
+	if err != nil {
+		log.Fatalf("Error getting stories: %v", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int
+		var title string
+		var text string
+		var timestamp int64
+
+		if err := rows.Scan(&id, &title, &text, &timestamp); err != nil {
+			log.Fatal(err)
+			return types.Story{}, err
+		}
+
+		story := types.Story{
+			Id:        id,
+			Title:     title,
+			Text:      text,
+			Timestamp: timestamp,
+		}
+		return story, nil
+	}
+
+	return types.Story{}, errors.New("Could not find a story with id=" + string(id))
+}
+
 func SelectAllStories() []types.Story {
 	query := `
-	SELECT title, text, timestamp
+	SELECT id, title, text, timestamp
 	FROM stories S;`
 
 	rows, err := db.Query(query)
@@ -61,15 +97,17 @@ func SelectAllStories() []types.Story {
 
 	stories := make([]types.Story, 0)
 	for rows.Next() {
+		var id int
 		var title string
 		var text string
 		var timestamp int64
 
-		if err := rows.Scan(&title, &text, &timestamp); err != nil {
+		if err := rows.Scan(&id, &title, &text, &timestamp); err != nil {
 			log.Fatal(err)
 		}
 
 		stories = append(stories, types.Story{
+			Id:        id,
 			Title:     title,
 			Text:      text,
 			Timestamp: timestamp,

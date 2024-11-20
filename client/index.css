@@ -4,6 +4,10 @@
   color: white;
 }
 
+body {
+  margin: 0;
+}
+
 input {
   font-family: "Noto Sans", sans-serif;
 }
@@ -38,6 +42,29 @@ button {
   gap: 12px;
 }
 
+header {
+  height: 4rem;
+  background-color: rgba(0, 0, 0, 0.145);
+  display: flex;
+  align-items: center;
+}
+
+header > nav > a {
+  text-decoration: none;
+  color: white;
+  font-size: larger;
+  font-weight: bolder;
+  margin-inline: 1em;
+}
+
+header > nav > a:hover {
+  color: grey;
+}
+
+header > nav > a:active {
+  color: rgb(77, 77, 77);
+}
+
 #story, #title {
   width: 40rem;
   display: flex;
@@ -62,20 +89,16 @@ button {
   flex: auto;
 }
 
-#vote-input, #title-input {
+#vote-input {
   width: 10em;
   height: min-content;
   border: 0;
   outline: none;
   font-size: 16px;
-  background-color: #dddddd3c;
   color: white;
+  background-color: transparent;
   border-radius: 6px;
-}
-
-#vote-input:disabled, #title-input:disabled {
-  color: grey;
-  background-color: #7f7f7f3c;
+  caret-color: aqua;
 }
 
 #votes-container {

@@ -6,6 +6,8 @@ import (
 	"group-write/state"
 	"log"
 	"net/http"
+	"sort"
+	"strconv"
 )
 
 func GetCurrentState(w http.ResponseWriter, r *http.Request) {
@@ -17,8 +19,27 @@ func GetCurrentState(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetStoryById(w http.ResponseWriter, r *http.Request) {
+	queryParams := r.URL.Query()
+	idStr := queryParams.Get("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "'id' parameter is not a valid int", http.StatusBadRequest)
+		return
+	}
+	story, err := db.SelectStoryById(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	json.NewEncoder(w).Encode(Response{GET_STORY_BY_ID, story})
+}
+
 func GetAllStories(w http.ResponseWriter, r *http.Request) {
 	stories := db.SelectAllStories()
+	sort.Slice(stories, func(i int, j int) bool {
+		return stories[i].Timestamp > stories[j].Timestamp
+	})
 	json.NewEncoder(w).Encode(Response{GET_ALL_STORIES, stories})
 }
 
@@ -45,6 +66,7 @@ func Init() {
 	mux.HandleFunc("/ws", WsSetup)
 	mux.HandleFunc("/get-current-state", GetCurrentState)
 	mux.HandleFunc("/get-stories", GetAllStories)
+	mux.HandleFunc("/get-story-by-id", GetStoryById)
 
 	wrappedMux := CorsMiddleware(mux)
 

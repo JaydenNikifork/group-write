@@ -5,6 +5,7 @@ const (
 	VOTE_RESULT       int = 1
 	GET_NUM_USERS     int = 2
 	GET_ALL_STORIES   int = 3
+	GET_STORY_BY_ID   int = 3
 	GET_CURRENT_STORY int = 4
 )
 

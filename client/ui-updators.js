@@ -36,6 +36,10 @@ class UIUpdator {
       }
       stateMachine.update({userHasVoted: true});
     }
+
+    this.storyElem.onclick = () => {
+      this.storyInputElem.focus();
+    }
   }
 
   showTitleInputs() {

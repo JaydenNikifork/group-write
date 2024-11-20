@@ -1,0 +1,26 @@
+main {
+  padding-inline: 4em;
+  padding-block: 2em;
+}
+
+#stories-grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 2em;
+
+  @media screen and (max-width: 768px) {
+    grid-template-columns: auto;
+  }
+}
+
+.story-chip {
+  background-color: rgba(0, 0, 0, 0.112);
+  padding: 2em;
+  border-radius: 2em;
+  cursor: pointer;
+}
+
+.story-chip-time {
+  color: grey;
+  margin-top: auto;
+}
