@@ -1,3 +1,4 @@
+const startSessionUrl = `${env.baseUrl}/start-session`;
 const getCurrentStateUrl = `${env.baseUrl}/get-current-state`;
 const getNumUsersUrl = `${env.baseUrl}/get-num-users`;
 const getStoriesUrl = `${env.baseUrl}/get-stories`;
@@ -55,6 +56,10 @@ class API {
     const currentState = await res.json();
 
     return currentState;
+  }
+
+  async startSession() {
+    await fetch(startSessionUrl);
   }
 }
 

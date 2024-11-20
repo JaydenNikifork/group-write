@@ -10,7 +10,7 @@ type Story struct {
 }
 
 type User struct {
-	Id       int
-	Conn     *websocket.Conn
-	HasVoted bool
+	SessionId string
+	Conn      *websocket.Conn
+	HasVoted  bool
 }

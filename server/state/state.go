@@ -86,10 +86,9 @@ var Votes StateVar[map[string]int] = StateVar[map[string]int]{
 	},
 }
 
-var Users StateVar[map[int]*types.User] = StateVar[map[int]*types.User]{
-	make(map[int]*types.User),
-	func(oldVal, newVal map[int]*types.User) {
-		println("Updating users with new val")
+var Users StateVar[map[string]*types.User] = StateVar[map[string]*types.User]{
+	make(map[string]*types.User),
+	func(oldVal, newVal map[string]*types.User) {
 	},
 }
 

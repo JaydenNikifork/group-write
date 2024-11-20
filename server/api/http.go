@@ -43,11 +43,37 @@ func GetAllStories(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(Response{GET_ALL_STORIES, stories})
 }
 
+func SetSessionCookie(w http.ResponseWriter, r *http.Request) {
+	_, err := GetSessionCookie(r)
+	if err == nil {
+		http.Error(w, "Bad request: Session cookie already exists", http.StatusBadRequest)
+		return
+	}
+
+	sessionId, err := GenerateSessionId()
+	if err != nil {
+		http.Error(w, "Internal server error: Unable to generate session token", http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    sessionId,
+		Path:     "/",
+		HttpOnly: false,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Session started"))
+}
+
 func CorsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers
-		w.Header().Set("Access-Control-Allow-Origin", "*") // Change '*' to specific origins if needed
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 		// Handle preflight OPTIONS request
@@ -64,6 +90,7 @@ func Init() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/ws", WsSetup)
+	mux.HandleFunc("/start-session", SetSessionCookie)
 	mux.HandleFunc("/get-current-state", GetCurrentState)
 	mux.HandleFunc("/get-stories", GetAllStories)
 	mux.HandleFunc("/get-story-by-id", GetStoryById)
