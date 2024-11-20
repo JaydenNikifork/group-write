@@ -62,27 +62,27 @@ func SelectStoryById(id int) (types.Story, error) {
 	}
 	defer rows.Close()
 
-	for rows.Next() {
-		var id int
-		var title string
-		var text string
-		var timestamp int64
-
-		if err := rows.Scan(&id, &title, &text, &timestamp); err != nil {
-			log.Fatal(err)
-			return types.Story{}, err
-		}
-
-		story := types.Story{
-			Id:        id,
-			Title:     title,
-			Text:      text,
-			Timestamp: timestamp,
-		}
-		return story, nil
+	if !rows.Next() {
+		return types.Story{}, errors.New("Could not find a story with id=" + strconv.Itoa(id))
 	}
 
-	return types.Story{}, errors.New("Could not find a story with id=" + strconv.Itoa(id))
+	var readId int
+	var title string
+	var text string
+	var timestamp int64
+
+	if err := rows.Scan(&id, &title, &text, &timestamp); err != nil {
+		log.Fatal(err)
+		return types.Story{}, err
+	}
+
+	story := types.Story{
+		Id:        readId,
+		Title:     title,
+		Text:      text,
+		Timestamp: timestamp,
+	}
+	return story, nil
 }
 
 func SelectAllStories() []types.Story {
