@@ -5,6 +5,7 @@ import (
 	"errors"
 	"group-write/types"
 	"log"
+	"strconv"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -81,7 +82,7 @@ func SelectStoryById(id int) (types.Story, error) {
 		return story, nil
 	}
 
-	return types.Story{}, errors.New("Could not find a story with id=" + string(id))
+	return types.Story{}, errors.New("Could not find a story with id=" + strconv.Itoa(id))
 }
 
 func SelectAllStories() []types.Story {
