@@ -4,7 +4,9 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"group-write/state"
 	"net/http"
+	"time"
 )
 
 func GenerateSessionId() (string, error) {
@@ -23,4 +25,13 @@ func GetSessionCookie(r *http.Request) (string, error) {
 	}
 	sessionId := cookie.Value
 	return sessionId, nil
+}
+
+func ValidateSessionId(sessionId string) bool {
+	user, exists := state.Users.Val[sessionId]
+	if !exists || user.Timeout <= time.Now().UnixMilli() {
+		return false
+	} else {
+		return true
+	}
 }

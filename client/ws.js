@@ -1,13 +1,12 @@
-const setupWebsocketUrl = toWebsocketUrl(`${env.baseUrl}/ws`);
-let ws = null;
+class WS {
+  setupWebsocketUrl = toWebsocketUrl(`${env.baseUrl}/ws`);
+  ws = new WebSocket(this.setupWebsocketUrl);
 
-async function init() {
-  await api.startSession();
-  // return;
-
-  ws = new WebSocket(setupWebsocketUrl);
-
-  ws.onmessage = (ev) => {
+  constructor() {
+    this.ws.onmessage = this.onmessage;
+  }
+  
+  onmessage = (ev) => {
     console.log("Message from server:", ev.data);
 
     const serverStateDiff = JSON.parse(ev.data);
@@ -30,6 +29,10 @@ async function init() {
     }
     stateMachine.update(stateUpdate);
   };
+
+  sendVote(/** @type {string} */ word) {
+    this.ws.send(word);
+  }
 }
 
-init();
+const ws = new WS();

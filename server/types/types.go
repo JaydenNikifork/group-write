@@ -11,6 +11,7 @@ type Story struct {
 
 type User struct {
 	SessionId string
+	Timeout   int64
 	Conn      *websocket.Conn
 	HasVoted  bool
 }

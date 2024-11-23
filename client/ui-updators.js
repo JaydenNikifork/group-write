@@ -24,15 +24,15 @@ class UIUpdator {
       if (ev.key != 'Enter' && ev.key != ' ') return;
     
       const word = this.storyInputElem.value.trim().split(' ')[0];
-      ws.send(word);
+      ws.sendVote(word);
       stateMachine.update({userHasVoted: true});
     });
 
     this.endStoryBtn.onclick = () => {
       if (stateMachine.state.voteType === 1) {
-        ws.send("END TITLE");
+        ws.sendVote("END TITLE");
       } else if (stateMachine.state.voteType === 2) {
-        ws.send("END STORY");
+        ws.sendVote("END STORY");
       }
       stateMachine.update({userHasVoted: true});
     }
