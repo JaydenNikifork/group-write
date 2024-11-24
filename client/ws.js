@@ -1,14 +1,19 @@
 class WS {
   setupWebsocketUrl = toWebsocketUrl(`${env.baseUrl}/ws`);
-  ws = new WebSocket(this.setupWebsocketUrl);
+
+  /**
+   * @type {WebSocket}
+   */
+  ws;
 
   constructor() {
-    this.ws.onmessage = this.onmessage;
+    api.startSession().then(() => {
+      this.ws = new WebSocket(this.setupWebsocketUrl);
+      this.ws.onmessage = this.onmessage;
+    });
   }
   
   onmessage = (ev) => {
-    console.log("Message from server:", ev.data);
-
     const serverStateDiff = JSON.parse(ev.data);
     const stateUpdate = {};
     Object.assign(stateUpdate, serverStateDiff);

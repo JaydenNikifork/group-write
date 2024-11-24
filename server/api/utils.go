@@ -29,9 +29,18 @@ func GetSessionCookie(r *http.Request) (string, error) {
 
 func ValidateSessionId(sessionId string) bool {
 	user, exists := state.Users.Val[sessionId]
-	if !exists || user.Timeout <= time.Now().UnixMilli() {
+	if !exists || user.Timeout.Before(time.Now()) {
 		return false
 	} else {
 		return true
+	}
+}
+
+func MiddlewareBuilder(middlewareFns ...func(http.HandlerFunc) http.HandlerFunc) func(http.HandlerFunc) http.HandlerFunc {
+	return func(handlerFn http.HandlerFunc) http.HandlerFunc {
+		for _, middlewareFn := range middlewareFns {
+			handlerFn = middlewareFn(handlerFn)
+		}
+		return handlerFn
 	}
 }

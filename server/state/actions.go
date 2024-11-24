@@ -82,14 +82,14 @@ func VoteWord(word string) {
 	}
 	votes[word]++
 	Votes.Update(votes)
-
-	println("Voted for:", word, "and count is now:", votes[word])
 }
 
 func SendStateDiff() {
 	stateDiff := GetStateDiff()
 	for _, user := range Users.Val {
-		user.Conn.WriteJSON(stateDiff)
+		if user.Conn != nil {
+			user.Conn.WriteJSON(stateDiff)
+		}
 	}
 	ResetStateDiff()
 }

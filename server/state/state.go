@@ -13,6 +13,7 @@ const (
 type StateDiff map[string]any
 
 var stateDiff StateDiff = make(StateDiff)
+var stateId int64 = 0
 
 type StateVar[T any] struct {
 	Val     T
@@ -22,7 +23,11 @@ type StateVar[T any] struct {
 func (v *StateVar[T]) Update(newVal T) {
 	v.Handler(v.Val, newVal)
 	v.Val = newVal
-	SendStateDiff()
+	if len(stateDiff) > 0 {
+		stateId++
+		stateDiff["stateId"] = stateId
+		SendStateDiff()
+	}
 }
 
 // define state vars
@@ -102,6 +107,7 @@ func ResetStateDiff() {
 
 func GetCurrentState() map[string]any {
 	state := make(map[string]any)
+	state["stateId"] = stateId
 	state["voteType"] = VoteType.Val
 	state["title"] = Title.Val
 	state["text"] = Text.Val

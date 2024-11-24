@@ -2,7 +2,6 @@ package api
 
 import (
 	"group-write/state"
-	"group-write/types"
 	"log"
 	"net/http"
 
@@ -19,16 +18,14 @@ func WsSetup(w http.ResponseWriter, r *http.Request) {
 	users := state.Users.Val
 
 	connected := true
-	newUser := new(types.User)
 	sessionId, err := GetSessionCookie(r)
 	if err != nil {
 		http.Error(w, "Unauthorized: Invalid session", http.StatusUnauthorized)
-		return
+		panic("Something is wrong with session validation, this error should never happen!")
 	}
-	_, exists := users[sessionId]
-	if exists {
-		http.Error(w, "Bad request: Client already connected", http.StatusBadRequest)
-		return
+	user, exists := users[sessionId]
+	if !exists {
+		panic("User does not exist for some reason, this should never be the case!")
 	}
 
 	ws, err := upgrader.Upgrade(w, r, nil)
@@ -37,19 +34,14 @@ func WsSetup(w http.ResponseWriter, r *http.Request) {
 	}
 	defer ws.Close()
 
-	newUser.SessionId = sessionId
-	newUser.Conn = ws
-	newUser.HasVoted = false
-
-	users[sessionId] = newUser
-	state.Users.Update(users)
-
+	user.Conn = ws
 	println("Connected client", sessionId, "to server")
 
 	ws.SetCloseHandler(func(code int, text string) error {
 		println("Client", sessionId, "has disconnected")
 		users := state.Users.Val
-		delete(users, sessionId)
+		user := users[sessionId]
+		user.Conn = nil
 		state.Users.Update(users)
 		connected = false
 		return nil

@@ -21,12 +21,46 @@ class API {
     VOTE_UPDATE: 0,
     VOTE_RESULT: 1
   }
-  
-  async validateSession() {
-    const sessionId = getSessionId();
-    if (sessionId === undefined) return false;
 
-    await 
+  isSessionValid = false;
+  startingSession = false;
+
+  async startSession() {
+    if (this.startingSession) return;
+    this.startingSession = true;
+
+    if (!this.isSessionValid) {
+      const sessionId = getSessionId();
+      if (sessionId === undefined) {
+        await fetch(this.startSessionUrl, {
+          credentials: 'include'
+        });
+        this.isSessionValid = true;
+      }
+    }
+
+    this.startingSession = false;
+  }
+
+  /**
+   * @private
+   * @param  {Parameters<fetch>} params 
+   */
+  async myFetch(...params) {
+    const res = await fetch(params[0], {
+      credentials: 'include',
+      ...params[1]
+    });
+    if (res.status === 401) {
+      this.isSessionValid = false;
+      await this.startSession();
+      return await fetch(params[0], {
+        credentials: 'include',
+        ...params[1]
+      });
+    } else {
+      return res;
+    }
   }
   
   /**
@@ -34,7 +68,8 @@ class API {
    * @returns {Promise<Story[]>}
    */
   async getStories() {
-    const res = await fetch(this.getStoriesUrl);
+    await this.startSession();
+    const res = await this.myFetch(this.getStoriesUrl);
     const json = await res.json();
     const stories = json.data;
 
@@ -46,7 +81,8 @@ class API {
    * @returns {Promise<Story>}
    */
   async getStoryById(id) {
-    const res = await fetch(this.getStoryByIdUrl(id));
+    await this.startSession();
+    const res = await this.myFetch(this.getStoryByIdUrl(id));
     const json = await res.json();
     const story = json.data;
 
@@ -58,14 +94,11 @@ class API {
    * @returns {Promise<Story>}
    */
   async getCurrentState() {
-    const res = await fetch(this.getCurrentStateUrl);
+    await this.startSession();
+    const res = await this.myFetch(this.getCurrentStateUrl);
     const currentState = await res.json();
-
+    console.log("Current server state:", currentState)
     return currentState;
-  }
-
-  async startSession() {
-    await fetch(this.startSessionUrl);
   }
 }
 

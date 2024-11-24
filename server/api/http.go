@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"group-write/db"
 	"group-write/state"
+	"group-write/types"
 	"log"
 	"net/http"
 	"sort"
 	"strconv"
+	"time"
 )
 
 func GetCurrentState(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +45,7 @@ func GetAllStories(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(Response{GET_ALL_STORIES, stories})
 }
 
-func SetSessionCookie(w http.ResponseWriter, r *http.Request) {
+func StartSession(w http.ResponseWriter, r *http.Request) {
 	sessionId, err := GetSessionCookie(r)
 	if err == nil || ValidateSessionId(sessionId) {
 		http.Error(w, "Bad request: Session cookie already exists", http.StatusBadRequest)
@@ -56,22 +58,34 @@ func SetSessionCookie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	expiryTime := time.Now().Add(24 * time.Hour)
+	newUser := types.User{
+		SessionId: sessionId,
+		Timeout:   expiryTime,
+		Conn:      nil,
+		HasVoted:  false,
+	}
+	users := state.Users.Val
+	users[sessionId] = &newUser
+
 	// PROD CHECK
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_id",
 		Value:    sessionId,
 		Path:     "/",
-		HttpOnly: false,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
+		Expires:  expiryTime,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteNoneMode,
 	})
 }
 
-func Middleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func CorsMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers
 		// PROD CHECK
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8081")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", "GET")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
@@ -80,30 +94,36 @@ func Middleware(next http.Handler) http.Handler {
 			return
 		}
 
+		next(w, r)
+	}
+}
+
+func SessionValidationMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		sessionId, err := GetSessionCookie(r)
 		if err != nil || !ValidateSessionId(sessionId) {
+			http.Error(w, "Unauthorized: invalid session", http.StatusUnauthorized)
 			return
 		}
 
-		// Call the next handler in the chain
-		next.ServeHTTP(w, r)
-	})
+		next(w, r)
+	}
 }
 
 func Init() {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/ws", WsSetup)
-	mux.HandleFunc("/start-session", SetSessionCookie)
-	mux.HandleFunc("/get-current-state", GetCurrentState)
-	mux.HandleFunc("/get-stories", GetAllStories)
-	mux.HandleFunc("/get-story-by-id", GetStoryById)
+	mw := MiddlewareBuilder(SessionValidationMiddleware, CorsMiddleware)
 
-	wrappedMux := Middleware(mux)
+	mux.HandleFunc("/start-session", CorsMiddleware(StartSession))
+	mux.HandleFunc("/ws", mw(WsSetup))
+	mux.HandleFunc("/get-current-state", mw(GetCurrentState))
+	mux.HandleFunc("/get-stories", mw(GetAllStories))
+	mux.HandleFunc("/get-story-by-id", mw(GetStoryById))
 
 	port := ":8080"
 	println("Running server on port", port)
-	err := http.ListenAndServe(port, wrappedMux)
+	err := http.ListenAndServe(port, mux)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

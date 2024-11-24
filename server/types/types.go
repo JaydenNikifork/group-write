@@ -1,6 +1,10 @@
 package types
 
-import "github.com/gorilla/websocket"
+import (
+	"time"
+
+	"github.com/gorilla/websocket"
+)
 
 type Story struct {
 	Id        int    `json:"id"`
@@ -11,7 +15,7 @@ type Story struct {
 
 type User struct {
 	SessionId string
-	Timeout   int64
+	Timeout   time.Time
 	Conn      *websocket.Conn
 	HasVoted  bool
 }
