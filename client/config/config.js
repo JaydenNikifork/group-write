@@ -7,13 +7,14 @@ const envs = {
 /**
  * @typedef {Object} Env
  * @property {string} baseUrl
- * @property {string} daoType
  */
 
 /**
  * @type {Env}
  */
+//const env = {
+  //"baseUrl": "http://localhost:8080",
+//};
 const env = {
-  "baseUrl": "http://localhost:8080",
-  "daoType": "api",
+  "baseUrl": "http://159.89.92.167:8080",
 };

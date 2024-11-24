@@ -7,8 +7,10 @@ import (
 	"group-write/types"
 	"log"
 	"net/http"
+	"os"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -81,10 +83,12 @@ func StartSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func CorsMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	allowedOrigins := strings.Split(os.Getenv("ALLOWED_ORIGINS"), ",")
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers
 		// PROD CHECK
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8081")
+		w.Header().Set("Access-Control-Allow-Origin", allowedOrigins[0])
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", "GET")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
