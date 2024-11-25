@@ -95,9 +95,10 @@ func CorsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		// Set CORS headers
 		// PROD CHECK
 		allowedOrigin := ""
+		requestOrigin := r.Header.Get("Origin")
 		for _, origin := range allowedOrigins {
-			if origin == r.Host {
-				allowedOrigin = r.Host
+			if origin == requestOrigin {
+				allowedOrigin = requestOrigin
 				break
 			}
 		}
