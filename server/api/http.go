@@ -2,12 +2,12 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"group-write/db"
 	"group-write/state"
 	"group-write/types"
 	"log"
 	"net/http"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -85,8 +85,11 @@ func StartSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func CorsMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	allowedOrigins := strings.Split(godotenv.Load(".env"), ",")
-	fmt.Println(allowedOrigins)
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic("No .env file found")
+	}
+	allowedOrigins := strings.Split(os.Getenv("ALLOWED_ORIGINS"), ",")
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers
