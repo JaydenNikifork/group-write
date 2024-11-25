@@ -51,7 +51,7 @@ func GetAllStories(w http.ResponseWriter, r *http.Request) {
 
 func StartSession(w http.ResponseWriter, r *http.Request) {
 	sessionId, err := GetSessionCookie(r)
-	if err == nil || ValidateSessionId(sessionId) {
+	if err == nil && ValidateSessionId(sessionId) {
 		http.Error(w, "Bad request: Session cookie already exists", http.StatusBadRequest)
 		return
 	}
@@ -94,7 +94,15 @@ func CorsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers
 		// PROD CHECK
-		w.Header().Set("Access-Control-Allow-Origin", allowedOrigins[0])
+		allowedOrigin := ""
+		for _, origin := range allowedOrigins {
+			if origin == r.Host {
+				allowedOrigin = r.Host
+				break
+			}
+		}
+
+		w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
