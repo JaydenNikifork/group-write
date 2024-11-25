@@ -16,5 +16,5 @@ const envs = {
   //"baseUrl": "http://localhost:8080",
 //};
 const env = {
-  "baseUrl": "http://159.89.92.167:8080",
+  "baseUrl": "https://nikispoon.xyz",
 };
