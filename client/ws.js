@@ -7,7 +7,7 @@ class WS {
   ws;
 
   constructor() {
-    api.startSession().then(() => {
+    api.startSession().finally(() => {
       this.ws = new WebSocket(this.setupWebsocketUrl);
       this.ws.onmessage = this.onmessage;
     });
