@@ -15,7 +15,11 @@ var upgrader = websocket.Upgrader{
 }
 
 func WsSetup(w http.ResponseWriter, r *http.Request) {
-	users := state.Users.Val
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer ws.Close()
 
 	connected := true
 	sessionId, err := GetSessionCookie(r)
@@ -23,16 +27,12 @@ func WsSetup(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized: Invalid session", http.StatusUnauthorized)
 		panic("Something is wrong with session validation, this error should never happen!")
 	}
+
+	users := state.Users.Val
 	user, exists := users[sessionId]
 	if !exists {
 		panic("User does not exist for some reason, this should never be the case!")
 	}
-
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer ws.Close()
 
 	user.Conn = ws
 	println("Connected client", sessionId, "to server")
