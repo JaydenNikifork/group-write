@@ -90,7 +90,7 @@ func CorsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		// PROD CHECK
 		w.Header().Set("Access-Control-Allow-Origin", allowedOrigins[0])
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Methods", "GET")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 		// Handle preflight OPTIONS request
