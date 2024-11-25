@@ -2,16 +2,18 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"group-write/db"
 	"group-write/state"
 	"group-write/types"
 	"log"
 	"net/http"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 func GetCurrentState(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +85,8 @@ func StartSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func CorsMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	allowedOrigins := strings.Split(os.Getenv("ALLOWED_ORIGINS"), ",")
+	allowedOrigins := strings.Split(godotenv.Load(".env"), ",")
+	fmt.Println(allowedOrigins)
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers
