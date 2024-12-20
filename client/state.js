@@ -30,8 +30,7 @@ class StateMachine {
    * @type {Partial<State>[]} 
    */
   stateUpdateQueue = [];
-  waitingForServerState = false;
-  resolveServerStateUpdate = null;
+  applyingQueue = false;
 
   // currently unused but keeping it for now who knows
   transition(/** @type {string} */input) {
@@ -65,62 +64,48 @@ class StateMachine {
     }
   }
 
+  async resyncState() {
+    const currentState = await api.getCurrentState();
+    Object.assign(this.state, currentState);
+    this.handler(currentState);
+  }
+
+  /**
+   * @private
+   * @param {Partial<State>} stateUpdate 
+   */
+  pushToQueue(stateUpdate) {
+    this.stateUpdateQueue.push(stateUpdate);
+  }
+
   /**
    * @private
    */
-  applyUpdate(/** @type {Partial<State>} */stateUpdate) {
-    if (stateUpdate.stateId !== undefined) {
-      if (this.state.stateId === null || this.state.stateId + 1 < stateUpdate.stateId) {
-        // somehow request most recent state
-        api.getCurrentState().then((currentServerState) => {
-          this.forceUpdate(currentServerState)
-        });
-
-        this.waitingForServerState = true;
-        this.update(stateUpdate);   // just call it again so it throws it in the queue
-      } else if (this.state.stateId + 1 === stateUpdate.stateId) {
-        for (const stateKey of Object.keys(stateUpdate)) {
-          this.state[stateKey] = stateUpdate[stateKey];
-        }
-        this.handler(stateUpdate);
-      } // do nothing otherwise, it means we have a redundant update 
-    } else {
-      for (const stateKey of Object.keys(stateUpdate)) {
-        this.state[stateKey] = stateUpdate[stateKey];
-      }
+  applyQueue() {
+    if (this.applyingQueue) return;
+    this.applyingQueue = true;
+    while (this.stateUpdateQueue.length > 0) {
+      const stateUpdate = this.stateUpdateQueue[0];
+      if (stateUpdate.stateId !== undefined && stateUpdate.stateId > this.state.stateId + 1) break;
+      this.stateUpdateQueue.shift();
+      if (stateUpdate.stateId !== undefined && stateUpdate.stateId < this.state.stateId + 1) continue;
+      Object.assign(this.state, stateUpdate);
       this.handler(stateUpdate);
     }
+
+    if (this.stateUpdateQueue.length > 0) { // this case means we missed a state update so we must resync
+      this.resyncState().then(() => this.applyQueue());   // re-try applying the state update queue afterwards
+    }
+    this.applyingQueue = false;
   }
 
-  // if stateUpdate contains no stateId, then we can assume it doesn't conflict with server state updates
-  update(/** @type {Partial<State>} */stateUpdate) {
-    console.log("State update:", stateUpdate)
-    if (stateUpdate.stateId !== undefined && this.waitingForServerState) {
-      this.stateUpdateQueue.push(stateUpdate);
-      // we are the first to wait, so we take on the responsibility of doing the update queue
-      if (this.resolveServerStateUpdate === null) {
-        const serverStateUpdatePromise = new Promise((resolve) => {
-          this.resolveServerStateUpdate = resolve;
-        });
-        serverStateUpdatePromise.then(() => {
-          for (const stateUpdate of this.stateUpdateQueue) {
-            this.applyUpdate(stateUpdate);
-          }
-          this.stateUpdateQueue = [];
-          this.resolveServerStateUpdate = null;
-          this.waitingForServerState = false;
-        });
-      }
-    } else {
-      this.applyUpdate(stateUpdate);
-    }
-  }
-
-  forceUpdate(/** @type {Partial<State>} */stateUpdate) {
-    for (const stateKey of Object.keys(stateUpdate)) {
-      this.state[stateKey] = stateUpdate[stateKey];
-    }
-    this.handler(stateUpdate);
+  /**
+   * Applies a state update
+   * @param {Partial<State>} stateUpdate 
+   */
+  update(stateUpdate) {
+    this.pushToQueue(stateUpdate);
+    this.applyQueue();
   }
 
   init(
