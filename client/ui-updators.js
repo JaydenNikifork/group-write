@@ -7,6 +7,7 @@ class UIUpdator {
   storyContainerId = 'story-container';
   votesTabId = 'votes';
   votesTimerId = 'votes-timer';
+  votesContainerId = 'votes-container';
 
   // List of HTML element classes
   storyWordClass = 'story-word';
@@ -18,6 +19,8 @@ class UIUpdator {
   titleElem = document.getElementById(this.titleId);
   storyElem = document.getElementById(this.storyId);
   storyContainerElem = document.getElementById(this.storyContainerId);
+  votesElem = document.getElementById(this.votesTabId);
+  votesContainerElem = document.getElementById(this.votesContainerId);
 
   init() {
     this.storyInputElem.addEventListener('keydown', (ev) => {
@@ -47,7 +50,7 @@ class UIUpdator {
     this.endStoryBtn.remove();
 
     this.titleElem.insertBefore(this.storyInputElem, null);
-    this.storyContainerElem.insertBefore(this.endStoryBtn, null);
+    this.votesContainerElem.insertBefore(this.endStoryBtn, this.votesElem);
     this.endStoryBtn.value = "END TITLE";
   }
 
@@ -56,7 +59,7 @@ class UIUpdator {
     this.endStoryBtn.remove();
 
     this.storyElem.insertBefore(this.storyInputElem, null);
-    this.storyContainerElem.insertBefore(this.endStoryBtn, null);
+    this.votesContainerElem.insertBefore(this.endStoryBtn, this.votesElem);
     this.endStoryBtn.value = "END STORY";
   }
 
@@ -67,7 +70,7 @@ class UIUpdator {
 
   showVotesTab() {
     const votesElem = document.getElementById(this.votesTabId);
-    votesElem.style.display = 'block';
+    votesElem.style.display = 'flex';
   }
 
   hideVotesTab() {

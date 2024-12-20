@@ -1,6 +1,7 @@
 function toWebsocketUrl(/** @type {string} */ url) {
   const cssStartIndex = url.indexOf('://');
-  const newUrl = `wss${url.slice(cssStartIndex)}`;
+  const protocol = url.startsWith('https') ? 'wss' : 'ws';
+  const newUrl = protocol + url.slice(cssStartIndex);
   return newUrl;
 }
 

@@ -12,9 +12,7 @@ const envs = {
 /**
  * @type {Env}
  */
-//const env = {
-  //"baseUrl": "http://localhost:8080",
-//};
 const env = {
-  "baseUrl": "https://nikispoon.xyz",
+  "baseUrl": "http://localhost:8080",
+  //"baseUrl": "https://nikispoon.xyz",
 };
