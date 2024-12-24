@@ -16,7 +16,17 @@ class WS {
     api.startSession().finally(() => {
       this.ws = new WebSocket(this.setupWebsocketUrl);
       this.ws.onmessage = this.onmessage;
+      this.ws.onopen = this.onopen;
+      this.ws.onclose = this.onclose;
     });
+  }
+
+  onopen = (ev) => {
+    stateMachine.update({ isConnected: true });
+  }
+
+  onclose = (ev) => {
+    stateMachine.update({ isConnected: false });
   }
   
   onmessage = (ev) => {

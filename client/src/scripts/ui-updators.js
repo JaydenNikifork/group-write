@@ -12,7 +12,8 @@ class UIUpdator {
   votesTabId = 'votes';
   votesTimerId = 'votes-timer';
   votesContainerId = 'votes-container';
-  numUsersId = 'num-users'
+  numUsersId = 'num-users';
+  loadingModalId = 'loading';
 
   // List of HTML element classes
   storyWordClass = 'story-word';
@@ -27,6 +28,7 @@ class UIUpdator {
   votesElem = document.getElementById(this.votesTabId);
   votesContainerElem = document.getElementById(this.votesContainerId);
   numUsersElem = document.getElementById(this.numUsersId);
+  loadingModalElem = document.getElementById(this.loadingModalId);
 
   init() {
     this.storyInputElem.addEventListener('keydown', (ev) => {
@@ -177,6 +179,16 @@ class UIUpdator {
   updateNumUsers(numUsers) {
     this.numUsersElem.innerText = `Users writing: ${numUsers}`;
   }
+
+  startLoading() {
+    this.loadingModalElem.style.opacity = '1';
+    this.loadingModalElem.style.visibility = 'visible';
+  }
+
+  stopLoading() {
+    this.loadingModalElem.style.opacity = '0';
+    this.loadingModalElem.style.visibility = 'hidden';
+  }
 }
 
 export const uiUpdator = new UIUpdator();
@@ -217,5 +229,11 @@ export function stateTransitionHandler(/** @type {Partial<State>} */ stateUpdate
 
   if (stateUpdate.numUsers !== undefined) {
     uiUpdator.updateNumUsers(stateUpdate.numUsers);
+  }
+
+  if (stateUpdate.isConnected === true) {
+    uiUpdator.stopLoading();
+  } else if (stateUpdate.isConnected === false) {
+    uiUpdator.startLoading();
   }
 }
