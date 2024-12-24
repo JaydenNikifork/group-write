@@ -143,16 +143,17 @@ class UIUpdator {
     const votesElems = document.getElementsByClassName(this.voteRowClass);
     Array.from(votesElems).forEach(elem => elem.remove());
 
-    const votesTimerElem = document.getElementById(this.votesTimerId);
-
-    const maxWidth = votesTimerElem.parentElement.clientWidth;
-    const updateVoteTimerInterval = setInterval(() => {
-      const newWidth = maxWidth - maxWidth * (Date.now() - state.voteStartTimestamp) / 5000;
-      const newTime = newWidth / maxWidth * 5;
-      votesTimerElem.innerText = (Math.round(newTime * 100) / 100).toFixed(2);
-      votesTimerElem.style.width = `${newWidth}px`;
-    });
-    stateMachine.update({ updateVoteTimerInterval });
+    if (state.updateVoteTimerInterval === null) {
+      const votesTimerElem = document.getElementById(this.votesTimerId);
+      const maxWidth = votesTimerElem.parentElement.clientWidth;
+      const updateVoteTimerInterval = setInterval(() => {
+        const newWidth = maxWidth - maxWidth * (Date.now() - state.voteStartTimestamp) / 5000;
+        const newTime = newWidth / maxWidth * 5;
+        votesTimerElem.innerText = (Math.round(newTime * 100) / 100).toFixed(2);
+        votesTimerElem.style.width = `${newWidth}px`;
+      });
+      stateMachine.update({ updateVoteTimerInterval });
+    }
 
     const votesElem = document.getElementById(this.votesTabId);
     for (const [word, numVotes] of votesArr) {
