@@ -1,4 +1,5 @@
 **/.env
 **/node_modules
 **/group-write.db
+**/group-write
 /client/dist
