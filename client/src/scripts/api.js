@@ -100,7 +100,6 @@ class API {
     await this.startSession();
     const res = await this.myFetch(this.getCurrentStateUrl);
     const currentState = await res.json();
-    console.log("Current server state:", currentState)
     return currentState;
   }
 }

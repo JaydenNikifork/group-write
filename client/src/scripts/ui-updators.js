@@ -12,6 +12,7 @@ class UIUpdator {
   votesTabId = 'votes';
   votesTimerId = 'votes-timer';
   votesContainerId = 'votes-container';
+  numUsersId = 'num-users'
 
   // List of HTML element classes
   storyWordClass = 'story-word';
@@ -25,6 +26,7 @@ class UIUpdator {
   storyContainerElem = document.getElementById(this.storyContainerId);
   votesElem = document.getElementById(this.votesTabId);
   votesContainerElem = document.getElementById(this.votesContainerId);
+  numUsersElem = document.getElementById(this.numUsersId);
 
   init() {
     this.storyInputElem.addEventListener('keydown', (ev) => {
@@ -167,6 +169,13 @@ class UIUpdator {
 
     stateMachine.update({ updateVoteTimerInterval: null }); 
   }
+
+  /**
+   * @param {number} numUsers 
+   */
+  updateNumUsers(numUsers) {
+    this.numUsersElem.innerText = `Users writing: ${numUsers}`;
+  }
 }
 
 export const uiUpdator = new UIUpdator();
@@ -203,5 +212,9 @@ export function stateTransitionHandler(/** @type {Partial<State>} */ stateUpdate
     stateMachine.update({userHasVoted: false});
 
     uiUpdator.focusInput();
+  }
+
+  if (stateUpdate.numUsers !== undefined) {
+    uiUpdator.updateNumUsers(stateUpdate.numUsers);
   }
 }

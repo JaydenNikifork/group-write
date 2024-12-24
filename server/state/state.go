@@ -114,6 +114,7 @@ func GetCurrentState() map[string]any {
 	state["isVoteRunning"] = IsVoteRunning.Val
 	state["voteStartTimestamp"] = VoteStartTimestamp.Val
 	state["votes"] = Votes.Val
+	state["numUsers"] = len(Users.Val)
 
 	return state
 }

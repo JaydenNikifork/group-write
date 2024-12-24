@@ -155,6 +155,7 @@ header > nav > a:active {
   padding: 1em 1em;
   width: fit-content;
   font-weight: bold;
+  margin-block: 1em;
 }
 
 #end-story:hover {

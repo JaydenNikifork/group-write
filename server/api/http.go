@@ -133,11 +133,11 @@ func Init() {
 
 	mw := MiddlewareBuilder(SessionValidationMiddleware, CorsMiddleware)
 
-	mux.HandleFunc("/start-session", CorsMiddleware(StartSession))
-	mux.HandleFunc("/ws", mw(WsSetup))
-	mux.HandleFunc("/get-current-state", mw(GetCurrentState))
-	mux.HandleFunc("/get-stories", mw(GetAllStories))
-	mux.HandleFunc("/get-story-by-id", mw(GetStoryById))
+	mux.HandleFunc("/group-write/start-session", CorsMiddleware(StartSession))
+	mux.HandleFunc("/group-write/ws", mw(WsSetup))
+	mux.HandleFunc("/group-write/get-current-state", mw(GetCurrentState))
+	mux.HandleFunc("/group-write/get-stories", mw(GetAllStories))
+	mux.HandleFunc("/group-write/get-story-by-id", mw(GetStoryById))
 
 	port := ":8080"
 	println("Running server on port", port)

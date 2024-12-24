@@ -131,7 +131,8 @@ export const state = {
   voteStartTimestamp: 0,
   votes: {},
   userHasVoted: false,
-  updateVoteTimerInterval: null
+  updateVoteTimerInterval: null,
+  numUsers: 0
 };
 
 export const stateMachine = new StateMachine();
