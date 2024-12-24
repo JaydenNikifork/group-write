@@ -40,7 +40,7 @@ func EndVote() {
 	Votes.Update(make(map[string]int))
 	users := Users.Val
 	for id := range users {
-		users[id].HasVoted = false
+		users[id].Vote = ""
 
 	}
 	Users.Update(users)
@@ -81,6 +81,19 @@ func VoteWord(word string) {
 		votes[key] = value
 	}
 	votes[word]++
+	Votes.Update(votes)
+}
+
+func UnvoteWord(word string) {
+	if !IsVoteRunning.Val || word == "" || Votes.Val[word] == 0 {
+		return
+	}
+
+	votes := make(map[string]int)
+	for key, value := range Votes.Val {
+		votes[key] = value
+	}
+	votes[word]--
 	Votes.Update(votes)
 }
 

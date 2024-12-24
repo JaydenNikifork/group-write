@@ -51,8 +51,7 @@ func GetAllStories(w http.ResponseWriter, r *http.Request) {
 
 func StartSession(w http.ResponseWriter, r *http.Request) {
 	sessionId, err := GetSessionCookie(r)
-	if err == nil && ValidateSessionId(sessionId) {
-		http.Error(w, "Bad request: Session cookie already exists", http.StatusBadRequest)
+	if err == nil && ValidateSessionId(sessionId) { // session is already valid so do nothing
 		return
 	}
 
@@ -67,7 +66,7 @@ func StartSession(w http.ResponseWriter, r *http.Request) {
 		SessionId: sessionId,
 		Timeout:   expiryTime,
 		Conn:      nil,
-		HasVoted:  false,
+		Vote:      "",
 	}
 	users := state.Users.Val
 	users[sessionId] = &newUser

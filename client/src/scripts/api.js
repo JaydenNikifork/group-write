@@ -1,3 +1,6 @@
+import { env } from "../../config/config";
+import { getSessionId } from "./utils";
+
 /**
  * @typedef {Object} Story
  * @property {number} id
@@ -102,4 +105,4 @@ class API {
   }
 }
 
-const api = new API();
+export const api = new API();

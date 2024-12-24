@@ -1,3 +1,8 @@
+import { state, stateMachine } from "./state";
+import { stateTransitionHandler, uiUpdator } from "./ui-updators";
+import { api } from "./api";
+import '../static/index.css';
+
 async function init() {
   const urlParmas = new URLSearchParams(window.location.search);
   const id = Number(urlParmas.get('id'));
@@ -8,5 +13,12 @@ async function init() {
     text: story.text
   });
 }
+
+stateMachine.init(
+  state,
+  [],
+  stateTransitionHandler
+);
+uiUpdator.init();
 
 init();

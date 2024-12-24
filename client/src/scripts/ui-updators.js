@@ -1,3 +1,7 @@
+import { stateMachine } from "./state";
+import { ws } from "./ws";
+/** @import { State } from "./state" */
+
 class UIUpdator {
   // List of HTML element ids
   titleId = 'title';
@@ -78,7 +82,10 @@ class UIUpdator {
     votesElem.style.display = 'none';
   }
 
-  updateStoryAndTitle(/** @type {string} */title, /** @type {string} */text) {
+  updateStoryAndTitle() {
+    const title = stateMachine.state.title;
+    const text = stateMachine.state.text;
+    
     const storyWordElems = document.getElementsByClassName(this.storyWordClass);
     Array.from(storyWordElems).forEach(elem => elem.remove());
 
@@ -111,6 +118,7 @@ class UIUpdator {
   enableAllInputs() {
     this.storyInputElem.disabled = false;
     this.endStoryBtn.disabled = false;
+    this.focusInput();
   }
 
   clearInput() {
@@ -161,5 +169,39 @@ class UIUpdator {
   }
 }
 
-const uiUpdator = new UIUpdator();
-uiUpdator.init();
+export const uiUpdator = new UIUpdator();
+
+export function stateTransitionHandler(/** @type {Partial<State>} */ stateUpdate) {
+  if (stateUpdate.title !== undefined || stateUpdate.text !== undefined) {
+    uiUpdator.updateStoryAndTitle();
+  }
+
+  if (stateUpdate.votes !== undefined) {
+    uiUpdator.updateVotesElem();
+  }
+
+  if (stateUpdate.voteType === 1) {
+    uiUpdator.showTitleInputs();
+  } else if (stateUpdate.voteType === 0) {
+    uiUpdator.hideInputs();
+  } else if (stateUpdate.voteType === 2) {
+    uiUpdator.showTextInputs();
+  }
+
+  if (stateUpdate.userHasVoted === true) {
+    uiUpdator.disableAllInputs();
+  } else if (stateUpdate.userHasVoted === false) {
+    uiUpdator.enableAllInputs();
+  }
+
+  if (stateUpdate.isVoteRunning === true) {
+    uiUpdator.showVotesTab();
+  } else if (stateUpdate.isVoteRunning === false) {
+    uiUpdator.hideVotesTab();
+    uiUpdator.stopVotesTimer();
+    uiUpdator.clearInput();
+    stateMachine.update({userHasVoted: false});
+
+    uiUpdator.focusInput();
+  }
+}

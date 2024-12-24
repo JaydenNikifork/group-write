@@ -1,3 +1,5 @@
+import { api } from "./api";
+
 /**
  * @typedef {Record<string, any>} State
  */
@@ -119,4 +121,17 @@ class StateMachine {
   }
 }
 
-const stateMachine = new StateMachine();
+/** @type {State} */
+export const state = {
+  stateId: null,
+  voteType: 0,
+  title: "",
+  text: "",
+  isVoteRunning: false,
+  voteStartTimestamp: 0,
+  votes: {},
+  userHasVoted: false,
+  updateVoteTimerInterval: null
+};
+
+export const stateMachine = new StateMachine();

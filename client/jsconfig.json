@@ -6,5 +6,6 @@
     "resolveJsonModule": true,
     "esModuleInterop": true
   },
-  "include": ["**/*.js"]
+  "include": ["**/*.js"],
+  "exclude": ["dist/*.js"]
 }

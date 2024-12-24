@@ -1,8 +1,6 @@
-const envs = {
-  LOCAL_TEST: './local-test-config.json',
-  LOCAL: './local-config.json',
-  PROD: './prod-config.json',
-}
+import local from './local-config.json';
+import localTest from './local-test-config.json';
+import prod from './prod-config.json';
 
 /**
  * @typedef {Object} Env
@@ -12,7 +10,4 @@ const envs = {
 /**
  * @type {Env}
  */
-const env = {
-  "baseUrl": "http://localhost:8080",
-  //"baseUrl": "https://nikispoon.xyz",
-};
+export const env = local;

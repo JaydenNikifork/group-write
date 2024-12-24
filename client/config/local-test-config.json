@@ -1,4 +1,3 @@
 {
-  "baseUrl": "http://localhost:8080",
-  "daoType": "test"
+  "baseUrl": "http://localhost:8080"
 }

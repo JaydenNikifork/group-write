@@ -17,5 +17,5 @@ type User struct {
 	SessionId string
 	Timeout   time.Time
 	Conn      *websocket.Conn
-	HasVoted  bool
+	Vote      string
 }

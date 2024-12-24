@@ -1,3 +1,8 @@
+import { api } from "./api";
+import '../static/index.css';
+import '../static/stories-history.css';
+/** @import { Story } from "./api" */
+
 /**
  * 
  * @param {Story} story 

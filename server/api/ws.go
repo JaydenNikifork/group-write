@@ -42,6 +42,7 @@ func WsSetup(w http.ResponseWriter, r *http.Request) {
 		users := state.Users.Val
 		user := users[sessionId]
 		user.Conn = nil
+		state.UnvoteWord(user.Vote)
 		state.Users.Update(users)
 		connected = false
 		return nil
@@ -54,11 +55,12 @@ func WsSetup(w http.ResponseWriter, r *http.Request) {
 		}
 
 		user := state.Users.Val[sessionId]
-		if state.VoteType.Val != state.NO_STORY && !user.HasVoted {
+		if state.VoteType.Val != state.NO_STORY && user.Vote == "" {
 			users := state.Users.Val
-			users[sessionId].HasVoted = true
+			word := string(msg)
+			users[sessionId].Vote = word
 			state.Users.Update(users)
-			state.VoteWord(string(msg))
+			state.VoteWord(word)
 		}
 	}
 }

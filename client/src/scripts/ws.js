@@ -1,3 +1,8 @@
+import { env } from "../../config/config";
+import { stateMachine } from "./state";
+import { toWebsocketUrl } from "./utils";
+import { api } from "./api";
+
 class WS {
   setupWebsocketUrl = toWebsocketUrl(`${env.baseUrl}/ws`);
 
@@ -41,4 +46,4 @@ class WS {
   }
 }
 
-const ws = new WS();
+export const ws = new WS();
